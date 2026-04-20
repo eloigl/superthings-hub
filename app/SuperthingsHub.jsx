@@ -919,11 +919,12 @@ const YouTubeCard = ({ video, onPlay, theme }) => (
 function PokedexTab({ config, search, theme }) {
   const [seen, setSeen] = useState({});
   const [favorites, setFavorites] = useState({});
-  const [seriesData, setSeriesData] = useState({}); // { slug: { loading, error, characters } }
+  const [seriesData, setSeriesData] = useState({});
   const [filterSeries, setFilterSeries] = useState("all");
   const [filterSeen, setFilterSeen] = useState("all");
   const [loaded, setLoaded] = useState(false);
-  const [expandedSeries, setExpandedSeries] = useState({}); // { slug: true } - series plegadas/desplegadas
+  const [expandedSeries, setExpandedSeries] = useState({});
+  const [selectedChar, setSelectedChar] = useState(null); // personaje seleccionado para el modal
 
   // Cargar progreso desde localStorage
   useEffect(() => {
@@ -1175,6 +1176,7 @@ function PokedexTab({ config, search, theme }) {
                       fav={!!favorites[c.id]}
                       onToggleSeen={() => toggleSeen(c.id)}
                       onToggleFav={() => toggleFav(c.id)}
+                      onOpenDetail={() => setSelectedChar(c)}
                       theme={theme}
                     />
                   ))}
@@ -1184,28 +1186,43 @@ function PokedexTab({ config, search, theme }) {
           </div>
         );
       })}
+
+      {/* Modal de detalle del personaje */}
+      {selectedChar && (
+        <CharacterModal
+          character={selectedChar}
+          seen={!!seen[selectedChar.id]}
+          fav={!!favorites[selectedChar.id]}
+          onToggleSeen={() => toggleSeen(selectedChar.id)}
+          onToggleFav={() => toggleFav(selectedChar.id)}
+          onClose={() => setSelectedChar(null)}
+          theme={theme}
+        />
+      )}
     </div>
   );
 }
 
-const PokedexCard = ({ character, seriesAccent = "#fbbf24", seen, fav, onToggleSeen, onToggleFav, theme }) => {
+const PokedexCard = ({ character, seriesAccent = "#fbbf24", seen, fav, onToggleSeen, onToggleFav, onOpenDetail, theme }) => {
   const [imgError, setImgError] = useState(false);
   const initials = character.name.split(" ").map(w => w[0]).slice(0, 2).join("").toUpperCase();
 
   return (
-    <div style={{
-      position: "relative",
-      background: theme.darkMode
-        ? "linear-gradient(160deg, rgba(30,20,60,0.8) 0%, rgba(15,10,35,0.95) 100%)"
-        : "linear-gradient(160deg, #fff 0%, #f8fafc 100%)",
-      border: `2px solid ${seen ? seriesAccent : theme.borderCol}`,
-      borderRadius: 14, padding: 10,
-      transition: "all 0.25s",
-      boxShadow: seen ? `0 0 18px ${seriesAccent}55` : "none",
-      opacity: seen ? 1 : 0.65,
-      cursor: "pointer",
-    }} onClick={onToggleSeen}>
-      {/* Fav button */}
+    <div
+      onClick={onOpenDetail}
+      style={{
+        position: "relative",
+        background: theme.darkMode
+          ? "linear-gradient(160deg, rgba(30,20,60,0.8) 0%, rgba(15,10,35,0.95) 100%)"
+          : "linear-gradient(160deg, #fff 0%, #f8fafc 100%)",
+        border: `2px solid ${seen ? seriesAccent : theme.borderCol}`,
+        borderRadius: 14, padding: 10,
+        transition: "all 0.25s",
+        boxShadow: seen ? `0 0 18px ${seriesAccent}55` : "none",
+        cursor: "pointer",
+      }}
+    >
+      {/* Botón favorito */}
       <button onClick={(e) => { e.stopPropagation(); onToggleFav(); }} style={{
         position: "absolute", top: 6, right: 6, width: 26, height: 26,
         border: "none", borderRadius: 8,
@@ -1216,53 +1233,231 @@ const PokedexCard = ({ character, seriesAccent = "#fbbf24", seen, fav, onToggleS
         <Heart size={13} fill={fav ? "white" : "none"}/>
       </button>
 
-      {/* Imagen del personaje (o fallback) */}
+      {/* Imagen del personaje */}
       <div style={{
         width: "100%", aspectRatio: "1/1", borderRadius: 10,
         background: theme.darkMode ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.04)",
         display: "flex", alignItems: "center", justifyContent: "center",
-        marginBottom: 10, position: "relative", overflow: "hidden",
-        filter: seen ? "none" : "grayscale(80%) brightness(0.6)",
+        marginBottom: 8, position: "relative", overflow: "hidden",
+        filter: seen ? "none" : "grayscale(70%) brightness(0.65)",
+        transition: "filter 0.3s",
       }}>
         {character.image && !imgError ? (
-          <img
-            src={character.image}
-            alt={character.name}
-            onError={() => setImgError(true)}
-            style={{
-              width: "100%", height: "100%", objectFit: "contain",
-              padding: 4,
-            }}
-          />
+          <img src={character.image} alt={character.name} onError={() => setImgError(true)}
+            style={{ width: "100%", height: "100%", objectFit: "contain", padding: 4 }}/>
         ) : (
           <span style={{
-            fontSize: 32, fontWeight: 900, color: seriesAccent,
-            textShadow: "0 4px 12px rgba(0,0,0,0.3)",
-            fontFamily: "'Impact', sans-serif", letterSpacing: "-0.03em",
+            fontSize: 30, fontWeight: 900, color: seriesAccent,
+            fontFamily: "'Impact', sans-serif",
           }}>{seen ? initials : "?"}</span>
         )}
 
-        {/* Marca de visto */}
-        {seen && (
-          <div style={{
-            position: "absolute", bottom: 6, right: 6,
-            width: 22, height: 22, borderRadius: "50%",
-            background: "#10b981", color: "white",
+        {/* Check de visto (botón separado dentro de la imagen) */}
+        <button
+          onClick={(e) => { e.stopPropagation(); onToggleSeen(); }}
+          title={seen ? "Marcar como no visto" : "Marcar como visto"}
+          style={{
+            position: "absolute", bottom: 5, right: 5,
+            width: 24, height: 24, borderRadius: "50%",
+            background: seen ? "#10b981" : "rgba(0,0,0,0.45)",
+            border: `2px solid ${seen ? "#10b981" : "rgba(255,255,255,0.2)"}`,
+            color: "white", cursor: "pointer",
             display: "flex", alignItems: "center", justifyContent: "center",
-            boxShadow: "0 4px 8px rgba(16,185,129,0.4)",
-          }}>
-            <Check size={12} strokeWidth={3}/>
-          </div>
-        )}
+            transition: "all 0.2s",
+          }}
+        >
+          <Check size={12} strokeWidth={3}/>
+        </button>
       </div>
 
       <div style={{
-        fontSize: 12, fontWeight: 700, color: theme.textMain, textAlign: "center",
+        fontSize: 11, fontWeight: 700, color: theme.textMain, textAlign: "center",
         overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+        lineHeight: 1.3,
       }}>{character.name}</div>
     </div>
   );
 };
+
+// =======================================================================
+// MODAL DE DETALLE DE PERSONAJE
+// =======================================================================
+function CharacterModal({ character, seen, fav, onToggleSeen, onToggleFav, onClose, theme }) {
+  const [detail, setDetail] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // Cerrar con Esc
+  useEffect(() => {
+    const onKey = (e) => { if (e.key === "Escape") onClose(); };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onClose]);
+
+  // Cargar detalle desde la API
+  useEffect(() => {
+    const slug = character.slug || character.name.replace(/ /g, "_");
+    fetch(`/api/character?slug=${encodeURIComponent(slug)}`)
+      .then(r => r.json())
+      .then(data => { setDetail(data); setLoading(false); })
+      .catch(e => { setError(e.message); setLoading(false); });
+  }, [character]);
+
+  const img = detail?.image || character.image;
+  const teamColor = detail?.team === "Héroe" ? "#60a5fa"
+    : detail?.team === "Villano" ? "#f87171"
+    : detail?.team === "Spy" ? "#a78bfa" : null;
+
+  return (
+    <div
+      onClick={onClose}
+      style={{
+        position: "fixed", inset: 0, zIndex: 300,
+        background: "rgba(0,0,0,0.8)", backdropFilter: "blur(10px)",
+        display: "flex", alignItems: "center", justifyContent: "center",
+        padding: 20,
+      }}
+    >
+      <div
+        onClick={e => e.stopPropagation()}
+        style={{
+          background: theme.darkMode ? "#110824" : "#fff",
+          border: `1px solid ${theme.borderCol}`,
+          borderRadius: 20, overflow: "hidden",
+          maxWidth: 480, width: "100%",
+          boxShadow: "0 30px 80px rgba(0,0,0,0.5)",
+          maxHeight: "90vh", overflowY: "auto",
+        }}
+      >
+        {/* Imagen de cabecera */}
+        <div style={{
+          width: "100%", height: 220, position: "relative",
+          background: theme.darkMode ? "rgba(255,255,255,0.03)" : "#f1f5f9",
+          display: "flex", alignItems: "center", justifyContent: "center",
+          overflow: "hidden",
+        }}>
+          {img ? (
+            <img src={img} alt={character.name}
+              style={{ maxHeight: "100%", maxWidth: "100%", objectFit: "contain", padding: 16 }}/>
+          ) : (
+            <span style={{ fontSize: 72, fontWeight: 900, color: theme.textMuted, fontFamily: "Impact" }}>
+              {character.name[0]}
+            </span>
+          )}
+
+          {/* Botón cerrar */}
+          <button onClick={onClose} style={{
+            position: "absolute", top: 12, right: 12,
+            width: 36, height: 36, borderRadius: 10,
+            background: "rgba(0,0,0,0.5)", border: "none",
+            color: "white", cursor: "pointer",
+            display: "flex", alignItems: "center", justifyContent: "center",
+          }}>
+            <X size={18}/>
+          </button>
+
+          {/* Badge equipo */}
+          {detail?.team && (
+            <div style={{
+              position: "absolute", top: 12, left: 12,
+              padding: "4px 10px", borderRadius: 8,
+              background: `${teamColor}22`, color: teamColor,
+              border: `1px solid ${teamColor}44`,
+              fontSize: 12, fontWeight: 700,
+            }}>{detail.team}</div>
+          )}
+        </div>
+
+        {/* Contenido */}
+        <div style={{ padding: 24 }}>
+          <h2 style={{
+            margin: "0 0 6px", fontSize: 24, fontWeight: 900,
+            letterSpacing: "-0.02em", color: theme.textMain,
+          }}>{character.name}</h2>
+
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 16 }}>
+            {character.series && (
+              <span style={{
+                padding: "3px 10px", borderRadius: 8,
+                background: "rgba(255,255,255,0.08)", color: theme.textMuted,
+                fontSize: 12, fontWeight: 600,
+              }}>{character.series}</span>
+            )}
+            {detail?.rarity && (
+              <span style={{
+                padding: "3px 10px", borderRadius: 8,
+                background: detail.rarity.includes("Ultra") ? "rgba(244,114,182,0.15)"
+                  : detail.rarity.includes("Super") ? "rgba(251,191,36,0.15)"
+                  : detail.rarity.includes("Rare") ? "rgba(96,165,250,0.15)"
+                  : "rgba(107,114,128,0.15)",
+                color: detail.rarity.includes("Ultra") ? "#f472b6"
+                  : detail.rarity.includes("Super") ? "#fbbf24"
+                  : detail.rarity.includes("Rare") ? "#60a5fa"
+                  : "#9ca3af",
+                fontSize: 12, fontWeight: 700,
+              }}>{detail.rarity}</span>
+            )}
+          </div>
+
+          {/* Descripción */}
+          {loading && (
+            <div style={{ display: "flex", gap: 10, alignItems: "center", color: theme.textMuted, fontSize: 14 }}>
+              <Loader2 size={16} className="animate-spin"/> Cargando info desde Fandom...
+            </div>
+          )}
+          {error && (
+            <p style={{ color: theme.textMuted, fontSize: 13 }}>No se pudo cargar la descripción.</p>
+          )}
+          {detail?.extract && (
+            <p style={{
+              margin: "0 0 20px", fontSize: 14, lineHeight: 1.65,
+              color: theme.darkMode ? "#cbd5e1" : "#475569",
+            }}>{detail.extract}</p>
+          )}
+          {detail && !detail.extract && !loading && (
+            <p style={{ color: theme.textMuted, fontSize: 13, marginBottom: 20 }}>
+              Sin descripción disponible en la wiki.
+            </p>
+          )}
+
+          {/* Acciones */}
+          <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+            <button onClick={onToggleSeen} style={{
+              flex: 1, minWidth: 120, padding: "10px 16px", borderRadius: 10,
+              background: seen ? "#10b981" : theme.cardBg,
+              border: `1px solid ${seen ? "#10b981" : theme.borderCol}`,
+              color: seen ? "white" : theme.textMain,
+              fontWeight: 700, fontSize: 14, cursor: "pointer", fontFamily: "inherit",
+              display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+            }}>
+              <Check size={16} strokeWidth={3}/>
+              {seen ? "Marcado como visto ✓" : "Marcar como visto"}
+            </button>
+            <button onClick={onToggleFav} style={{
+              padding: "10px 14px", borderRadius: 10,
+              background: fav ? "#ef4444" : theme.cardBg,
+              border: `1px solid ${fav ? "#ef4444" : theme.borderCol}`,
+              color: fav ? "white" : theme.textMain,
+              cursor: "pointer", fontFamily: "inherit",
+              display: "flex", alignItems: "center", justifyContent: "center",
+            }}>
+              <Heart size={18} fill={fav ? "white" : "none"}/>
+            </button>
+            <a href={character.link || detail?.link} target="_blank" rel="noreferrer" style={{
+              padding: "10px 14px", borderRadius: 10, textDecoration: "none",
+              background: "rgba(250,0,90,0.12)", color: "#fa005a",
+              border: "1px solid rgba(250,0,90,0.3)",
+              display: "flex", alignItems: "center", gap: 6,
+              fontSize: 13, fontWeight: 600,
+            }}>
+              Ver en Fandom <ExternalLink size={13}/>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 const selectStyle = (theme) => ({
   padding: "8px 12px", borderRadius: 10,
