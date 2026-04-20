@@ -1,9 +1,9 @@
-// API route: obtiene los personajes de una serie de SuperThings desde Fandom
+// API route: obtiene los personajes de una serie de SuperThings
+// Usa la API oficial de MediaWiki (Fandom la expone gratuitamente)
 // Uso: /api/characters?series=Series_1
 
 export const runtime = "edge";
 
-// Mapa de series disponibles (slug en Fandom → nombre legible)
 const SERIES_MAP = {
   "Series_1":                      "Serie 1",
   "Series_2":                      "Serie 2",
@@ -23,11 +23,36 @@ const SERIES_MAP = {
   "Evolution_Series":              "Evolution",
 };
 
+// Categoría en Fandom para cada serie
+const CATEGORY_MAP = {
+  "Series_1":                      "Series 1",
+  "Series_2":                      "Series 2",
+  "Series_3":                      "Series 3",
+  "Series_4":                      "Series 4",
+  "Series_5":                      "Series 5",
+  "Secret_Spies_Series":           "Secret Spies Series",
+  "Power_Machines_Series":         "Power Machines Series",
+  "Kazoom_Kids_Series":            "Kazoom Kids Series",
+  "Guardians_of_Kazoom_Series":    "Guardians of Kazoom Series",
+  "Rescue_Force_Series":           "Rescue Force Series",
+  "Neon_Power_Series":             "Neon Power Series",
+  "Mutant_Battle_Series":          "Mutant Battle Series",
+  "Kazoom_Power_Battle_Series":    "Kazoom Power Battle Series",
+  "Kazoom_Power_Mission_Series":   "Kazoom Power Mission Series",
+  "Kazoom_Power_Warriors_Series":  "Kazoom Power Warriors Series",
+  "Evolution_Series":              "Evolution Series",
+};
+
+const WIKI_API = "https://superthings.fandom.com/api.php";
+const HEADERS = {
+  "User-Agent": "SuperthingsHub/1.0 (https://github.com/eloigl/superthings-hub; educational)",
+  "Accept": "application/json",
+};
+
 export async function GET(request) {
   const { searchParams } = new URL(request.url);
   const seriesSlug = searchParams.get("series");
 
-  // Si no piden serie concreta → devolver la lista de series disponibles
   if (!seriesSlug) {
     return json({
       series: Object.entries(SERIES_MAP).map(([slug, name]) => ({ slug, name })),
@@ -39,7 +64,7 @@ export async function GET(request) {
   }
 
   try {
-    const characters = await scrapeSeriesPage(seriesSlug);
+    const characters = await fetchCharactersFromCategory(seriesSlug);
     return new Response(JSON.stringify({
       series: seriesSlug,
       seriesName: SERIES_MAP[seriesSlug],
@@ -49,7 +74,6 @@ export async function GET(request) {
       status: 200,
       headers: {
         "Content-Type": "application/json",
-        // Cache 24h en el servidor (no se piden datos a Fandom todo el rato)
         "Cache-Control": "public, s-maxage=86400, stale-while-revalidate=43200",
       },
     });
@@ -58,85 +82,86 @@ export async function GET(request) {
   }
 }
 
-async function scrapeSeriesPage(seriesSlug) {
-  const url = `https://superthings.fandom.com/wiki/${seriesSlug}`;
-  const res = await fetch(url, {
-    headers: {
-      "User-Agent": "Mozilla/5.0 (compatible; SuperthingsHub/1.0)",
-      "Accept": "text/html,application/xhtml+xml",
-    },
-    next: { revalidate: 86400 },
-  });
+// Paso 1: obtener lista de páginas en la categoría
+async function fetchCharactersFromCategory(seriesSlug) {
+  const category = CATEGORY_MAP[seriesSlug];
+  const pages = await fetchCategoryMembers(category);
 
-  if (!res.ok) throw new Error(`Fandom devolvió ${res.status}`);
-  const html = await res.text();
+  if (pages.length === 0) return [];
 
-  return extractCharactersFromHtml(html, seriesSlug);
-}
-
-// Extrae personajes del HTML de Fandom. Fandom usa varias estructuras según la serie:
-// - <gallery> con imágenes y captions
-// - Tablas wiki con enlaces a personajes
-// - Listas de enlaces con imágenes
-function extractCharactersFromHtml(html, seriesSlug) {
-  const characters = new Map(); // usamos Map para deduplicar por nombre
-
-  // Patrón 1: imágenes dentro de galerías <gallerybox> o figuras con <img data-src>
-  // Fandom suele meter la URL real en data-src (lazy loading)
-  const imgPattern = /<a\s+[^>]*href="\/wiki\/([^"#?]+)"[^>]*>\s*<img\s+[^>]*(?:data-src|src)="([^"]+)"[^>]*(?:alt="([^"]*)"|title="([^"]*)")[^>]*>/gi;
-  let m;
-  while ((m = imgPattern.exec(html)) !== null) {
-    const slug = decodeURIComponent(m[1]);
-    const imgUrl = m[2];
-    const alt = (m[3] || m[4] || "").trim();
-
-    // Filtros: excluimos imágenes que no son personajes
-    if (slug.startsWith("Category:") || slug.startsWith("File:") ||
-        slug.startsWith("Special:") || slug.startsWith("User:") ||
-        slug === seriesSlug) continue;
-    // Excluimos URLs de imagen que no sean de personajes
-    if (imgUrl.includes("Site-logo") || imgUrl.includes("Wordmark") ||
-        imgUrl.includes("favicon")) continue;
-
-    const name = cleanName(alt || slug);
-    if (!name || name.length < 2 || name.length > 80) continue;
-    // Filtros de texto: descartar "Series", "Logo", etc.
-    if (/^(Series|Logo|Checklist|Gallery|Image|File|Icon)/i.test(name)) continue;
-
-    // Limpiar URL de imagen (quitar redimensiones para obtener la original)
-    const cleanImg = cleanImageUrl(imgUrl);
-
-    if (!characters.has(name)) {
-      characters.set(name, {
-        name,
-        slug,
-        image: cleanImg,
-        link: `https://superthings.fandom.com/wiki/${slug}`,
-      });
-    }
+  // Paso 2: obtener imágenes de cada página en lotes de 20
+  const characters = [];
+  const BATCH = 20;
+  for (let i = 0; i < pages.length; i += BATCH) {
+    const batch = pages.slice(i, i + BATCH);
+    const withImages = await fetchPageImages(batch);
+    characters.push(...withImages);
   }
 
-  // Convertir Map a array
-  const arr = Array.from(characters.values());
-
-  // Ordenar: primero los que tienen nombre más corto/simple (suelen ser personajes principales)
-  return arr;
+  return characters;
 }
 
-function cleanName(raw) {
-  if (!raw) return "";
-  return raw
-    .replace(/_/g, " ")
-    .replace(/\s+/g, " ")
-    .replace(/\.(png|jpg|jpeg|gif|webp)$/i, "")
-    .trim();
+// Obtiene todos los miembros de una categoría usando la MediaWiki API
+async function fetchCategoryMembers(category) {
+  const pages = [];
+  let cmcontinue = "";
+  let safety = 5; // máximo 5 páginas de resultados (500 artículos)
+
+  while (safety-- > 0) {
+    const params = new URLSearchParams({
+      action: "query",
+      list: "categorymembers",
+      cmtitle: `Category:${category}`,
+      cmtype: "page",
+      cmlimit: "100",
+      format: "json",
+      origin: "*",
+      ...(cmcontinue ? { cmcontinue } : {}),
+    });
+
+    const res = await fetch(`${WIKI_API}?${params}`, { headers: HEADERS, next: { revalidate: 86400 } });
+    if (!res.ok) throw new Error(`MediaWiki API error ${res.status}`);
+    const data = await res.json();
+
+    const members = data?.query?.categorymembers || [];
+    pages.push(...members.map(m => ({ id: m.pageid, title: m.title })));
+
+    if (!data.continue?.cmcontinue) break;
+    cmcontinue = data.continue.cmcontinue;
+  }
+
+  // Filtrar páginas que no son personajes (galerías, subcategorías, listas)
+  return pages.filter(p => !p.title.includes("/Gallery") && !p.title.includes("Category:"));
 }
 
-function cleanImageUrl(raw) {
-  if (!raw) return "";
-  // Fandom usa URLs tipo https://static.wikia.nocookie.net/.../scale-to-width-down/100?cb=...
-  // Quitamos la parte de redimensión para obtener la imagen original
-  return raw.split("/revision/")[0];
+// Obtiene la imagen principal de cada página en lotes
+async function fetchPageImages(pages) {
+  if (pages.length === 0) return [];
+
+  const titles = pages.map(p => p.title).join("|");
+  const params = new URLSearchParams({
+    action: "query",
+    titles,
+    prop: "pageimages|info",
+    piprop: "thumbnail|original",
+    pithumbsize: "200",
+    inprop: "url",
+    format: "json",
+    origin: "*",
+  });
+
+  const res = await fetch(`${WIKI_API}?${params}`, { headers: HEADERS, next: { revalidate: 86400 } });
+  if (!res.ok) return pages.map(p => ({ name: p.title, image: null, link: `https://superthings.fandom.com/wiki/${encodeURIComponent(p.title)}`, slug: p.title }));
+
+  const data = await res.json();
+  const pagesData = data?.query?.pages || {};
+
+  return Object.values(pagesData).map(page => ({
+    name: page.title,
+    slug: page.title.replace(/ /g, "_"),
+    image: page.thumbnail?.source || page.original?.source || null,
+    link: page.fullurl || `https://superthings.fandom.com/wiki/${encodeURIComponent(page.title.replace(/ /g, "_"))}`,
+  })).filter(p => p.name && !p.name.includes("/Gallery"));
 }
 
 function json(obj, status = 200) {
@@ -145,4 +170,3 @@ function json(obj, status = 200) {
     headers: { "Content-Type": "application/json" },
   });
 }
-
