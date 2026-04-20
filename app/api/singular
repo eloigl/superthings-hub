@@ -1,1 +1,105 @@
+// API route: obtiene la ficha completa de un personaje de Fandom
+// Uso: /api/character?slug=Enigma
+
+export const runtime = "edge";
+
+const WIKI_API = "https://superthings.fandom.com/api.php";
+const HEADERS = {
+  "User-Agent": "SuperthingsHub/1.0 (https://github.com/eloigl/superthings-hub; educational)",
+  "Accept": "application/json",
+};
+
+export async function GET(request) {
+  const { searchParams } = new URL(request.url);
+  const slug = searchParams.get("slug");
+
+  if (!slug) {
+    return json({ error: "Falta el parámetro ?slug=" }, 400);
+  }
+
+  try {
+    const detail = await fetchCharacterDetail(slug);
+    return new Response(JSON.stringify(detail), {
+      status: 200,
+      headers: {
+        "Content-Type": "application/json",
+        "Cache-Control": "public, s-maxage=86400, stale-while-revalidate=43200",
+      },
+    });
+  } catch (err) {
+    return json({ error: err.message }, 500);
+  }
+}
+
+async function fetchCharacterDetail(slug) {
+  // Llamada 1: obtener extracto de texto + imagen principal
+  const params = new URLSearchParams({
+    action: "query",
+    titles: slug.replace(/_/g, " "),
+    prop: "pageimages|extracts|categories|info",
+    piprop: "thumbnail|original",
+    pithumbsize: "400",
+    exintro: "true",
+    explaintext: "true",
+    exsentences: "5",
+    inprop: "url",
+    format: "json",
+    origin: "*",
+  });
+
+  const res = await fetch(`${WIKI_API}?${params}`, {
+    headers: HEADERS,
+    next: { revalidate: 86400 },
+  });
+
+  if (!res.ok) throw new Error(`MediaWiki API error ${res.status}`);
+  const data = await res.json();
+  const pages = data?.query?.pages || {};
+  const page = Object.values(pages)[0];
+
+  if (!page || page.missing) {
+    return { name: slug.replace(/_/g, " "), error: "Personaje no encontrado en Fandom" };
+  }
+
+  // Extraer categorías para deducir rareza y equipo
+  const cats = (page.categories || []).map(c => c.title.replace("Category:", "").toLowerCase());
+
+  const rarity = cats.find(c => c.includes("ultra rare")) ? "Ultra Rare"
+    : cats.find(c => c.includes("super rare") || c.includes("gold")) ? "Super Rare (Gold)"
+    : cats.find(c => c.includes("rare") || c.includes("silver")) ? "Rare (Silver)"
+    : "Common";
+
+  const team = cats.find(c => c.includes("hero") || c.includes("heroes")) ? "Héroe"
+    : cats.find(c => c.includes("villain")) ? "Villano"
+    : cats.find(c => c.includes("spy") || c.includes("spies")) ? "Spy"
+    : null;
+
+  // Limpiar el extracto de texto (quitar líneas vacías y texto de plantilla)
+  const rawExtract = page.extract || "";
+  const extract = rawExtract
+    .split("\n")
+    .map(l => l.trim())
+    .filter(l => l.length > 20 && !l.startsWith("=="))
+    .slice(0, 3)
+    .join(" ");
+
+  return {
+    name: page.title,
+    slug,
+    image: page.original?.source || page.thumbnail?.source || null,
+    thumbnail: page.thumbnail?.source || null,
+    extract: extract || null,
+    rarity,
+    team,
+    link: page.fullurl || `https://superthings.fandom.com/wiki/${encodeURIComponent(slug)}`,
+    categories: cats.slice(0, 8),
+  };
+}
+
+function json(obj, status = 200) {
+  return new Response(JSON.stringify(obj), {
+    status,
+    headers: { "Content-Type": "application/json" },
+  });
+}
 
