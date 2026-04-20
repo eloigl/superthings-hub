@@ -1401,23 +1401,41 @@ function CharacterModal({ character, seen, fav, onToggleSeen, onToggleFav, onClo
 
           {/* Descripción */}
           {loading && (
-            <div style={{ display: "flex", gap: 10, alignItems: "center", color: theme.textMuted, fontSize: 14 }}>
+            <div style={{ display: "flex", gap: 10, alignItems: "center", color: theme.textMuted, fontSize: 14, marginBottom: 16 }}>
               <Loader2 size={16} className="animate-spin"/> Cargando info desde Fandom...
             </div>
           )}
-          {error && (
-            <p style={{ color: theme.textMuted, fontSize: 13 }}>No se pudo cargar la descripción.</p>
+
+          {/* Info estructurada: rival, poder, equipo */}
+          {detail && !loading && (
+            <div style={{ display: "grid", gap: 8, marginBottom: 16 }}>
+              {detail.rival && (
+                <div style={{ display: "flex", gap: 8, alignItems: "center", fontSize: 13 }}>
+                  <span style={{ color: theme.textMuted, minWidth: 60 }}>Rival</span>
+                  <span style={{ color: theme.textMain, fontWeight: 600 }}>{detail.rival}</span>
+                </div>
+              )}
+              {detail.power && (
+                <div style={{ display: "flex", gap: 8, alignItems: "center", fontSize: 13 }}>
+                  <span style={{ color: theme.textMuted, minWidth: 60 }}>Poder</span>
+                  <span style={{ color: "#fbbf24", fontWeight: 600 }}>{detail.power}</span>
+                </div>
+              )}
+              {detail.teamName && (
+                <div style={{ display: "flex", gap: 8, alignItems: "center", fontSize: 13 }}>
+                  <span style={{ color: theme.textMuted, minWidth: 60 }}>Equipo</span>
+                  <span style={{ color: theme.textMain, fontWeight: 600 }}>{detail.teamName}</span>
+                </div>
+              )}
+            </div>
           )}
+
           {detail?.extract && (
             <p style={{
-              margin: "0 0 20px", fontSize: 14, lineHeight: 1.65,
+              margin: "0 0 16px", fontSize: 14, lineHeight: 1.65,
               color: theme.darkMode ? "#cbd5e1" : "#475569",
+              borderLeft: `3px solid ${theme.borderCol}`, paddingLeft: 12,
             }}>{detail.extract}</p>
-          )}
-          {detail && !detail.extract && !loading && (
-            <p style={{ color: theme.textMuted, fontSize: 13, marginBottom: 20 }}>
-              Sin descripción disponible en la wiki.
-            </p>
           )}
 
           {/* Acciones */}
