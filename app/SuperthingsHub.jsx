@@ -66,72 +66,33 @@ const fetchWithFallback = async (targetUrl) => {
   }
 };
 
-// ---------- CATÁLOGO DE PERSONAJES (curado por series) ----------
-// Estructura de ejemplo. El usuario puede añadir más desde Ajustes.
-const DEFAULT_CHARACTERS = [
-  // Serie 1
-  { id: "s1-kid-kazoom", name: "Kid Kazoom", series: "Serie 1", color: "#ff3860", rarity: "Ultra Rare" },
-  { id: "s1-prof-k", name: "Prof K", series: "Serie 1", color: "#3273dc", rarity: "Rare" },
-  { id: "s1-enigma", name: "Enigma", series: "Serie 1", color: "#7957d5", rarity: "Ultra Rare" },
-  { id: "s1-trash", name: "Trash", series: "Serie 1", color: "#23d160", rarity: "Silver" },
-  { id: "s1-pizza", name: "Pizza", series: "Serie 1", color: "#ffdd57", rarity: "Common" },
-  { id: "s1-captain-fly", name: "Captain Fly", series: "Serie 1", color: "#209cee", rarity: "Rare" },
-  { id: "s1-huracan", name: "Huracán", series: "Serie 1", color: "#00d1b2", rarity: "Silver" },
-  { id: "s1-laser", name: "Laser", series: "Serie 1", color: "#ff6b00", rarity: "Common" },
-  { id: "s1-bombastic", name: "Bombastic", series: "Serie 1", color: "#d62828", rarity: "Silver" },
-  { id: "s1-stinky", name: "Stinky", series: "Serie 1", color: "#6a994e", rarity: "Common" },
-  // Serie 2 Rescue
-  { id: "s2-aqua-stretch", name: "Aqua Stretch", series: "Serie 2 Rescue", color: "#00b4d8", rarity: "Ultra Rare" },
-  { id: "s2-fire-king", name: "Fire King", series: "Serie 2 Rescue", color: "#f77f00", rarity: "Ultra Rare" },
-  { id: "s2-gold-medic", name: "Gold Medic", series: "Serie 2 Rescue", color: "#fcbf49", rarity: "Gold" },
-  { id: "s2-police-boss", name: "Police Boss", series: "Serie 2 Rescue", color: "#003049", rarity: "Rare" },
-  { id: "s2-ranger", name: "Ranger", series: "Serie 2 Rescue", color: "#588157", rarity: "Silver" },
-  { id: "s2-snow-breaker", name: "Snow Breaker", series: "Serie 2 Rescue", color: "#caf0f8", rarity: "Silver" },
-  { id: "s2-life-guard", name: "Life Guard", series: "Serie 2 Rescue", color: "#ef233c", rarity: "Common" },
-  { id: "s2-sky-master", name: "Sky Master", series: "Serie 2 Rescue", color: "#8ecae6", rarity: "Rare" },
-  // Serie 3 Neon
-  { id: "s3-neon-flash", name: "Neon Flash", series: "Serie 3 Neon", color: "#ff006e", rarity: "Ultra Rare" },
-  { id: "s3-atomic-rex", name: "Atomic Rex", series: "Serie 3 Neon", color: "#8338ec", rarity: "Gold" },
-  { id: "s3-cyber-wolf", name: "Cyber Wolf", series: "Serie 3 Neon", color: "#3a86ff", rarity: "Rare" },
-  { id: "s3-laser-eye", name: "Laser Eye", series: "Serie 3 Neon", color: "#fb5607", rarity: "Silver" },
-  { id: "s3-plasma", name: "Plasma", series: "Serie 3 Neon", color: "#ffbe0b", rarity: "Rare" },
-  { id: "s3-toxic", name: "Toxic", series: "Serie 3 Neon", color: "#06d6a0", rarity: "Common" },
-  { id: "s3-glow-ninja", name: "Glow Ninja", series: "Serie 3 Neon", color: "#c77dff", rarity: "Silver" },
-  { id: "s3-dark-fury", name: "Dark Fury", series: "Serie 3 Neon", color: "#240046", rarity: "Ultra Rare" },
-  // Serie 4 Guardians of Kaboom
-  { id: "s4-kaboom-king", name: "Kaboom King", series: "Serie 4 Guardians", color: "#d00000", rarity: "Ultra Rare" },
-  { id: "s4-shield-bot", name: "Shield Bot", series: "Serie 4 Guardians", color: "#4361ee", rarity: "Gold" },
-  { id: "s4-rocket-knight", name: "Rocket Knight", series: "Serie 4 Guardians", color: "#f72585", rarity: "Rare" },
-  { id: "s4-storm-rider", name: "Storm Rider", series: "Serie 4 Guardians", color: "#4cc9f0", rarity: "Silver" },
-  { id: "s4-titan", name: "Titan", series: "Serie 4 Guardians", color: "#7209b7", rarity: "Rare" },
-  { id: "s4-phantom", name: "Phantom", series: "Serie 4 Guardians", color: "#560bad", rarity: "Common" },
-  { id: "s4-blaze", name: "Blaze", series: "Serie 4 Guardians", color: "#f48c06", rarity: "Silver" },
-  { id: "s4-iron-hammer", name: "Iron Hammer", series: "Serie 4 Guardians", color: "#6c757d", rarity: "Gold" },
-  // Serie 5
-  { id: "s5-power-prince", name: "Power Prince", series: "Serie 5", color: "#ef476f", rarity: "Ultra Rare" },
-  { id: "s5-queen-ice", name: "Queen Ice", series: "Serie 5", color: "#118ab2", rarity: "Gold" },
-  { id: "s5-wild-claw", name: "Wild Claw", series: "Serie 5", color: "#06a77d", rarity: "Rare" },
-  { id: "s5-mecha-fist", name: "Mecha Fist", series: "Serie 5", color: "#073b4c", rarity: "Silver" },
-  { id: "s5-solar-beam", name: "Solar Beam", series: "Serie 5", color: "#ffd166", rarity: "Rare" },
-  { id: "s5-shadow-strike", name: "Shadow Strike", series: "Serie 5", color: "#22223b", rarity: "Ultra Rare" },
-  { id: "s5-jungle-lord", name: "Jungle Lord", series: "Serie 5", color: "#588b8b", rarity: "Common" },
-  { id: "s5-golden-eagle", name: "Golden Eagle", series: "Serie 5", color: "#e4b343", rarity: "Gold" },
+// ---------- 16 SERIES DE SUPERTHINGS ----------
+// Los personajes se cargan al vuelo desde /api/characters que consulta Fandom.
+// Así siempre están actualizados con lo último que publica MagicBox.
+const SERIES_LIST = [
+  { slug: "Series_1",                      name: "Serie 1",                accent: "#ff006e" },
+  { slug: "Series_2",                      name: "Serie 2",                accent: "#3a86ff" },
+  { slug: "Series_3",                      name: "Serie 3",                accent: "#fb5607" },
+  { slug: "Series_4",                      name: "Serie 4",                accent: "#8338ec" },
+  { slug: "Series_5",                      name: "Serie 5",                accent: "#ffbe0b" },
+  { slug: "Secret_Spies_Series",           name: "Secret Spies",           accent: "#06d6a0" },
+  { slug: "Power_Machines_Series",         name: "Power Machines",         accent: "#ef476f" },
+  { slug: "Kazoom_Kids_Series",            name: "Kazoom Kids",            accent: "#f72585" },
+  { slug: "Guardians_of_Kazoom_Series",    name: "Guardians of Kazoom",    accent: "#d00000" },
+  { slug: "Rescue_Force_Series",           name: "Rescue Force",           accent: "#00b4d8" },
+  { slug: "Neon_Power_Series",             name: "Neon Power",             accent: "#c77dff" },
+  { slug: "Mutant_Battle_Series",          name: "Mutant Battle",          accent: "#588b8b" },
+  { slug: "Kazoom_Power_Battle_Series",    name: "Kazoom Power Battle",    accent: "#f48c06" },
+  { slug: "Kazoom_Power_Mission_Series",   name: "Kazoom Power Mission",   accent: "#118ab2" },
+  { slug: "Kazoom_Power_Warriors_Series",  name: "Kazoom Power Warriors",  accent: "#e4b343" },
+  { slug: "Evolution_Series",              name: "Evolution",              accent: "#7209b7" },
 ];
-
-const RARITY_STYLES = {
-  "Common":     { ring: "#6b7280", glow: "rgba(107,114,128,0.3)",  label: "#9ca3af" },
-  "Silver":     { ring: "#cbd5e1", glow: "rgba(203,213,225,0.4)",  label: "#e2e8f0" },
-  "Gold":       { ring: "#fbbf24", glow: "rgba(251,191,36,0.55)",  label: "#fde68a" },
-  "Rare":       { ring: "#60a5fa", glow: "rgba(96,165,250,0.55)",  label: "#bfdbfe" },
-  "Ultra Rare": { ring: "#f472b6", glow: "rgba(244,114,182,0.7)",  label: "#fbcfe8" },
-};
 
 // ---------- Helpers de storage local ----------
 const STORAGE_KEYS = {
   config:     "superthings_config",
   seen:       "superthings_seen_characters",
   favorites:  "superthings_favorites",
-  customChars:"superthings_custom_chars",
 };
 
 const loadFromStorage = async (key, fallback) => {
@@ -227,6 +188,10 @@ const timeAgo = (dateStr) => {
 };
 
 const stripHtml = (html) => {
+  if (typeof document === "undefined") {
+    // Fallback SSR: regex básico
+    return (html || "").replace(/<[^>]*>/g, "");
+  }
   const tmp = document.createElement("div");
   tmp.innerHTML = html;
   return tmp.textContent || tmp.innerText || "";
@@ -638,7 +603,7 @@ function LinkedInTab({ config, search, theme }) {
 }
 
 const LinkedInCard = ({ post, theme }) => {
-  const [expanded, setExpanded] = React.useState(false);
+  const [expanded, setExpanded] = useState(false);
 
   // Extraer hashtags del HTML original de forma única (respetando el orden)
   const hashtagsSet = new Set();
@@ -954,38 +919,55 @@ const YouTubeCard = ({ video, onPlay, theme }) => (
 function PokedexTab({ config, search, theme }) {
   const [seen, setSeen] = useState({});
   const [favorites, setFavorites] = useState({});
-  const [customChars, setCustomChars] = useState([]);
+  const [seriesData, setSeriesData] = useState({}); // { slug: { loading, error, characters } }
   const [filterSeries, setFilterSeries] = useState("all");
-  const [filterSeen, setFilterSeen] = useState("all"); // all | seen | unseen
+  const [filterSeen, setFilterSeen] = useState("all");
   const [loaded, setLoaded] = useState(false);
-  const [showAddModal, setShowAddModal] = useState(false);
+  const [expandedSeries, setExpandedSeries] = useState({}); // { slug: true } - series plegadas/desplegadas
 
+  // Cargar progreso desde localStorage
   useEffect(() => {
     (async () => {
       const s = await loadFromStorage(STORAGE_KEYS.seen, {});
       const f = await loadFromStorage(STORAGE_KEYS.favorites, {});
-      const c = await loadFromStorage(STORAGE_KEYS.customChars, []);
-      setSeen(s); setFavorites(f); setCustomChars(c);
+      setSeen(s); setFavorites(f);
       setLoaded(true);
     })();
   }, []);
 
-  const allChars = useMemo(() => [...DEFAULT_CHARACTERS, ...customChars], [customChars]);
+  // Cargar personajes de una serie desde la API
+  const loadSeries = useCallback(async (slug) => {
+    setSeriesData(prev => ({ ...prev, [slug]: { loading: true, error: null, characters: [] } }));
+    try {
+      const res = await fetch(`/api/characters?series=${encodeURIComponent(slug)}`);
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err?.error || `Error ${res.status}`);
+      }
+      const data = await res.json();
+      setSeriesData(prev => ({ ...prev, [slug]: {
+        loading: false,
+        error: null,
+        characters: (data.characters || []).map(c => ({
+          ...c,
+          id: `${slug}:${c.slug || c.name}`, // id único combinando serie y personaje
+          series: data.seriesName,
+          seriesSlug: slug,
+        })),
+      }}));
+    } catch (e) {
+      setSeriesData(prev => ({ ...prev, [slug]: { loading: false, error: e.message, characters: [] } }));
+    }
+  }, []);
 
-  const seriesList = useMemo(() => {
-    const set = new Set(allChars.map(c => c.series));
-    return Array.from(set);
-  }, [allChars]);
-
-  const filtered = useMemo(() => {
-    return allChars.filter(c => {
-      if (filterSeries !== "all" && c.series !== filterSeries) return false;
-      if (filterSeen === "seen" && !seen[c.id]) return false;
-      if (filterSeen === "unseen" && seen[c.id]) return false;
-      if (search && !c.name.toLowerCase().includes(search.toLowerCase())) return false;
-      return true;
-    });
-  }, [allChars, filterSeries, filterSeen, seen, search]);
+  // Al abrir la pestaña, cargar las primeras 2 series y marcar el resto como "por cargar"
+  useEffect(() => {
+    if (!loaded) return;
+    // Carga automática de las dos primeras series para no saturar
+    loadSeries(SERIES_LIST[0].slug);
+    loadSeries(SERIES_LIST[1].slug);
+    setExpandedSeries({ [SERIES_LIST[0].slug]: true, [SERIES_LIST[1].slug]: true });
+  }, [loaded, loadSeries]);
 
   const toggleSeen = (id) => {
     const next = { ...seen };
@@ -1001,19 +983,29 @@ function PokedexTab({ config, search, theme }) {
     saveToStorage(STORAGE_KEYS.favorites, next);
   };
 
-  const totalSeen = Object.keys(seen).length;
-  const total = allChars.length;
-  const progress = total > 0 ? (totalSeen / total) * 100 : 0;
+  const toggleExpand = (slug) => {
+    if (!expandedSeries[slug] && !seriesData[slug]) {
+      loadSeries(slug);
+    }
+    setExpandedSeries(prev => ({ ...prev, [slug]: !prev[slug] }));
+  };
 
-  // agrupar por serie
-  const grouped = useMemo(() => {
-    const map = {};
-    filtered.forEach(c => {
-      if (!map[c.series]) map[c.series] = [];
-      map[c.series].push(c);
+  // Calcular totales globales
+  const totals = useMemo(() => {
+    let allChars = [];
+    Object.values(seriesData).forEach(s => {
+      if (s.characters) allChars = allChars.concat(s.characters);
     });
-    return map;
-  }, [filtered]);
+    const totalSeen = allChars.filter(c => seen[c.id]).length;
+    return { total: allChars.length, seen: totalSeen, allChars };
+  }, [seriesData, seen]);
+
+  const progress = totals.total > 0 ? (totals.seen / totals.total) * 100 : 0;
+
+  // Series a mostrar según filtro
+  const seriesToShow = filterSeries === "all"
+    ? SERIES_LIST
+    : SERIES_LIST.filter(s => s.slug === filterSeries);
 
   if (!loaded) return <LoadingGrid theme={theme}/>;
 
@@ -1021,34 +1013,26 @@ function PokedexTab({ config, search, theme }) {
     <div>
       <SectionHeader
         title="Pokédex de Personajes"
-        subtitle="Marca los personajes que has visto o conseguido"
+        subtitle="Datos en vivo desde Fandom Wiki · Progreso guardado en este dispositivo"
         theme={theme}
-        extra={
-          <button onClick={() => setShowAddModal(true)} style={{
-            display: "flex", alignItems: "center", gap: 6, padding: "8px 14px",
-            background: "linear-gradient(135deg, #fbbf24, #f59e0b)",
-            border: "none", borderRadius: 10, color: "#78350f",
-            fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "inherit",
-          }}>+ Añadir</button>
-        }
       />
 
-      {/* Progreso */}
+      {/* Progreso global */}
       <div style={{
         background: theme.cardBg, border: `1px solid ${theme.borderCol}`,
         borderRadius: 16, padding: 20, marginBottom: 20,
       }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10, flexWrap: "wrap", gap: 8 }}>
           <div>
-            <div style={{ fontSize: 13, color: theme.textMuted, marginBottom: 2 }}>Progreso total</div>
-            <div style={{ fontSize: 28, fontWeight: 900, letterSpacing: "-0.02em", color: theme.textMain }}>
-              Has visto <span style={{ color: "#fbbf24" }}>{totalSeen}</span> de {total} personajes
+            <div style={{ fontSize: 13, color: theme.textMuted, marginBottom: 2 }}>Progreso (series cargadas)</div>
+            <div style={{ fontSize: 24, fontWeight: 900, letterSpacing: "-0.02em", color: theme.textMain }}>
+              Has visto <span style={{ color: "#fbbf24" }}>{totals.seen}</span> de {totals.total} personajes
             </div>
           </div>
           <div style={{
             width: 64, height: 64, borderRadius: "50%",
             background: `conic-gradient(#fbbf24 ${progress}%, rgba(255,255,255,0.08) 0)`,
-            display: "flex", alignItems: "center", justifyContent: "center", position: "relative",
+            display: "flex", alignItems: "center", justifyContent: "center",
           }}>
             <div style={{
               width: 52, height: 52, borderRadius: "50%", background: theme.darkMode ? "#1a0b2e" : "#fff",
@@ -1057,9 +1041,7 @@ function PokedexTab({ config, search, theme }) {
             }}>{Math.round(progress)}%</div>
           </div>
         </div>
-        <div style={{
-          height: 8, background: "rgba(255,255,255,0.08)", borderRadius: 4, overflow: "hidden",
-        }}>
+        <div style={{ height: 8, background: "rgba(255,255,255,0.08)", borderRadius: 4, overflow: "hidden" }}>
           <div style={{
             height: "100%", width: `${progress}%`,
             background: "linear-gradient(90deg, #ff006e, #fbbf24)",
@@ -1071,8 +1053,8 @@ function PokedexTab({ config, search, theme }) {
       {/* Filtros */}
       <div style={{ display: "flex", gap: 8, marginBottom: 20, flexWrap: "wrap" }}>
         <select value={filterSeries} onChange={(e) => setFilterSeries(e.target.value)} style={selectStyle(theme)}>
-          <option value="all">Todas las series</option>
-          {seriesList.map(s => <option key={s} value={s}>{s}</option>)}
+          <option value="all">Todas las series ({SERIES_LIST.length})</option>
+          {SERIES_LIST.map(s => <option key={s.slug} value={s.slug}>{s.name}</option>)}
         </select>
         <div style={{ display: "flex", gap: 4 }}>
           {[
@@ -1098,58 +1080,116 @@ function PokedexTab({ config, search, theme }) {
         </div>
       </div>
 
-      {/* Grid de personajes agrupados por serie */}
-      {Object.keys(grouped).length === 0 && (
-        <EmptyState icon={Grid3x3} title="No hay personajes con esos filtros" description="Prueba a cambiar los filtros o añade personajes nuevos." theme={theme}/>
-      )}
+      {/* Series (acordeón con lazy loading) */}
+      {seriesToShow.map(serie => {
+        const data = seriesData[serie.slug];
+        const isExpanded = expandedSeries[serie.slug];
+        const chars = data?.characters || [];
 
-      {Object.entries(grouped).map(([serie, chars]) => (
-        <div key={serie} style={{ marginBottom: 32 }}>
-          <h3 style={{
-            margin: "0 0 14px", fontSize: 16, fontWeight: 800,
-            color: theme.textMain, letterSpacing: "-0.01em",
-            display: "flex", alignItems: "center", gap: 8,
-          }}>
-            <div style={{ width: 4, height: 18, background: "linear-gradient(180deg, #ff006e, #fbbf24)", borderRadius: 2 }}/>
-            {serie}
-            <span style={{ fontSize: 12, color: theme.textMuted, fontWeight: 500 }}>
-              ({chars.filter(c => seen[c.id]).length} / {chars.length})
-            </span>
-          </h3>
-          <div style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))",
-            gap: 12,
-          }}>
-            {chars.map(c => (
-              <PokedexCard key={c.id} character={c}
-                seen={!!seen[c.id]} fav={!!favorites[c.id]}
-                onToggleSeen={() => toggleSeen(c.id)}
-                onToggleFav={() => toggleFav(c.id)}
-                theme={theme}/>
-            ))}
+        // Aplicar filtros de búsqueda/vistos a los personajes ya cargados
+        const filteredChars = chars.filter(c => {
+          if (filterSeen === "seen" && !seen[c.id]) return false;
+          if (filterSeen === "unseen" && seen[c.id]) return false;
+          if (search && !c.name.toLowerCase().includes(search.toLowerCase())) return false;
+          return true;
+        });
+
+        const seenInSeries = chars.filter(c => seen[c.id]).length;
+
+        return (
+          <div key={serie.slug} style={{ marginBottom: 16 }}>
+            {/* Cabecera de serie (clicable) */}
+            <button
+              onClick={() => toggleExpand(serie.slug)}
+              style={{
+                width: "100%", padding: "14px 18px", borderRadius: 14,
+                background: theme.cardBg, border: `1px solid ${theme.borderCol}`,
+                display: "flex", alignItems: "center", gap: 12,
+                cursor: "pointer", fontFamily: "inherit", color: theme.textMain,
+                marginBottom: isExpanded ? 12 : 0,
+                transition: "all 0.2s",
+                textAlign: "left",
+              }}
+            >
+              <div style={{ width: 4, height: 28, background: serie.accent, borderRadius: 2 }}/>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 16, fontWeight: 800, color: theme.textMain }}>
+                  {serie.name}
+                </div>
+                <div style={{ fontSize: 12, color: theme.textMuted, marginTop: 2 }}>
+                  {data?.loading ? "Cargando personajes..." :
+                   data?.error ? `Error: ${data.error}` :
+                   chars.length > 0 ? `${seenInSeries} / ${chars.length} vistos` :
+                   "Pulsa para cargar"}
+                </div>
+              </div>
+              {chars.length > 0 && (
+                <div style={{
+                  padding: "3px 10px", borderRadius: 8,
+                  background: `${serie.accent}22`, color: serie.accent,
+                  fontSize: 12, fontWeight: 700,
+                }}>{chars.length}</div>
+              )}
+              <ChevronDown size={18} style={{
+                transition: "transform 0.2s",
+                transform: isExpanded ? "rotate(180deg)" : "rotate(0deg)",
+                color: theme.textMuted,
+              }}/>
+            </button>
+
+            {/* Contenido expandido */}
+            {isExpanded && (
+              <div style={{ padding: "0 4px" }}>
+                {data?.loading && <LoadingGrid theme={theme}/>}
+                {data?.error && (
+                  <div style={{
+                    padding: 14, borderRadius: 12,
+                    background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.3)",
+                    fontSize: 13, color: "#fca5a5", display: "flex", gap: 10, alignItems: "center",
+                  }}>
+                    <AlertCircle size={16}/>
+                    <div style={{ flex: 1 }}>No se pudieron cargar los personajes: {data.error}</div>
+                    <button onClick={() => loadSeries(serie.slug)} style={{
+                      padding: "6px 12px", borderRadius: 8, border: "none",
+                      background: "#ef4444", color: "white", fontSize: 12, fontWeight: 600,
+                      cursor: "pointer", fontFamily: "inherit",
+                    }}>Reintentar</button>
+                  </div>
+                )}
+                {data && !data.loading && !data.error && filteredChars.length === 0 && (
+                  <div style={{ padding: 20, textAlign: "center", color: theme.textMuted, fontSize: 13 }}>
+                    {chars.length === 0 ? "No se encontraron personajes." : "Ninguno coincide con los filtros."}
+                  </div>
+                )}
+                <div style={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(auto-fill, minmax(130px, 1fr))",
+                  gap: 10,
+                }}>
+                  {filteredChars.map(c => (
+                    <PokedexCard
+                      key={c.id}
+                      character={c}
+                      seriesAccent={serie.accent}
+                      seen={!!seen[c.id]}
+                      fav={!!favorites[c.id]}
+                      onToggleSeen={() => toggleSeen(c.id)}
+                      onToggleFav={() => toggleFav(c.id)}
+                      theme={theme}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
-        </div>
-      ))}
-
-      {showAddModal && (
-        <AddCharacterModal
-          onClose={() => setShowAddModal(false)}
-          onAdd={(char) => {
-            const next = [...customChars, char];
-            setCustomChars(next);
-            saveToStorage(STORAGE_KEYS.customChars, next);
-          }}
-          existingSeries={seriesList}
-          theme={theme}
-        />
-      )}
+        );
+      })}
     </div>
   );
 }
 
-const PokedexCard = ({ character, seen, fav, onToggleSeen, onToggleFav, theme }) => {
-  const rarityStyle = RARITY_STYLES[character.rarity] || RARITY_STYLES.Common;
+const PokedexCard = ({ character, seriesAccent = "#fbbf24", seen, fav, onToggleSeen, onToggleFav, theme }) => {
+  const [imgError, setImgError] = useState(false);
   const initials = character.name.split(" ").map(w => w[0]).slice(0, 2).join("").toUpperCase();
 
   return (
@@ -1158,61 +1198,60 @@ const PokedexCard = ({ character, seen, fav, onToggleSeen, onToggleFav, theme })
       background: theme.darkMode
         ? "linear-gradient(160deg, rgba(30,20,60,0.8) 0%, rgba(15,10,35,0.95) 100%)"
         : "linear-gradient(160deg, #fff 0%, #f8fafc 100%)",
-      border: `2px solid ${seen ? rarityStyle.ring : theme.borderCol}`,
+      border: `2px solid ${seen ? seriesAccent : theme.borderCol}`,
       borderRadius: 14, padding: 10,
       transition: "all 0.25s",
-      boxShadow: seen ? `0 0 20px ${rarityStyle.glow}` : "none",
-      opacity: seen ? 1 : 0.55,
+      boxShadow: seen ? `0 0 18px ${seriesAccent}55` : "none",
+      opacity: seen ? 1 : 0.65,
       cursor: "pointer",
     }} onClick={onToggleSeen}>
       {/* Fav button */}
       <button onClick={(e) => { e.stopPropagation(); onToggleFav(); }} style={{
-        position: "absolute", top: 6, right: 6, width: 28, height: 28,
+        position: "absolute", top: 6, right: 6, width: 26, height: 26,
         border: "none", borderRadius: 8,
-        background: fav ? "#ef4444" : "rgba(0,0,0,0.3)",
+        background: fav ? "#ef4444" : "rgba(0,0,0,0.4)",
         color: "white", cursor: "pointer",
         display: "flex", alignItems: "center", justifyContent: "center", zIndex: 2,
       }}>
-        <Heart size={14} fill={fav ? "white" : "none"}/>
+        <Heart size={13} fill={fav ? "white" : "none"}/>
       </button>
 
-      {/* Rareza label */}
-      <div style={{
-        position: "absolute", top: 6, left: 6, fontSize: 9, fontWeight: 800,
-        padding: "2px 6px", borderRadius: 4,
-        background: rarityStyle.ring, color: "#000",
-        textTransform: "uppercase", letterSpacing: "0.05em",
-      }}>{character.rarity}</div>
-
-      {/* Ilustración */}
+      {/* Imagen del personaje (o fallback) */}
       <div style={{
         width: "100%", aspectRatio: "1/1", borderRadius: 10,
-        background: `linear-gradient(135deg, ${character.color}, ${character.color}99)`,
+        background: theme.darkMode ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.04)",
         display: "flex", alignItems: "center", justifyContent: "center",
-        marginTop: 20, marginBottom: 10, position: "relative", overflow: "hidden",
-        filter: seen ? "none" : "grayscale(80%) brightness(0.5)",
+        marginBottom: 10, position: "relative", overflow: "hidden",
+        filter: seen ? "none" : "grayscale(80%) brightness(0.6)",
       }}>
-        {/* patrón decorativo */}
-        <div style={{
-          position: "absolute", inset: 0,
-          backgroundImage: "radial-gradient(circle at 30% 20%, rgba(255,255,255,0.3) 0%, transparent 50%)",
-        }}/>
-        <span style={{
-          fontSize: 38, fontWeight: 900, color: "white",
-          textShadow: "0 4px 12px rgba(0,0,0,0.4)",
-          fontFamily: "'Impact', sans-serif", letterSpacing: "-0.03em",
-        }}>{seen ? initials : "?"}</span>
+        {character.image && !imgError ? (
+          <img
+            src={character.image}
+            alt={character.name}
+            onError={() => setImgError(true)}
+            style={{
+              width: "100%", height: "100%", objectFit: "contain",
+              padding: 4,
+            }}
+          />
+        ) : (
+          <span style={{
+            fontSize: 32, fontWeight: 900, color: seriesAccent,
+            textShadow: "0 4px 12px rgba(0,0,0,0.3)",
+            fontFamily: "'Impact', sans-serif", letterSpacing: "-0.03em",
+          }}>{seen ? initials : "?"}</span>
+        )}
 
         {/* Marca de visto */}
         {seen && (
           <div style={{
             position: "absolute", bottom: 6, right: 6,
-            width: 24, height: 24, borderRadius: "50%",
+            width: 22, height: 22, borderRadius: "50%",
             background: "#10b981", color: "white",
             display: "flex", alignItems: "center", justifyContent: "center",
             boxShadow: "0 4px 8px rgba(16,185,129,0.4)",
           }}>
-            <Check size={14} strokeWidth={3}/>
+            <Check size={12} strokeWidth={3}/>
           </div>
         )}
       </div>
@@ -1563,73 +1602,3 @@ const inputStyle = (theme) => ({
   background: theme.cardBg, color: theme.textMain, fontSize: 14,
   fontFamily: "inherit", outline: "none", boxSizing: "border-box",
 });
-
-// =======================================================================
-// MODAL PARA AÑADIR PERSONAJE
-// =======================================================================
-function AddCharacterModal({ onClose, onAdd, existingSeries, theme }) {
-  const [name, setName] = useState("");
-  const [series, setSeries] = useState(existingSeries[0] || "Serie nueva");
-  const [newSeries, setNewSeries] = useState("");
-  const [color, setColor] = useState("#ff006e");
-  const [rarity, setRarity] = useState("Common");
-
-  const handleAdd = () => {
-    if (!name) return;
-    const finalSeries = newSeries || series;
-    onAdd({
-      id: `custom-${Date.now()}`,
-      name, series: finalSeries, color, rarity,
-    });
-    onClose();
-  };
-
-  return (
-    <div onClick={onClose} style={{
-      position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)",
-      backdropFilter: "blur(8px)", zIndex: 100,
-      display: "flex", alignItems: "center", justifyContent: "center", padding: 20,
-    }}>
-      <div onClick={(e) => e.stopPropagation()} style={{
-        background: theme.darkMode ? "#1a0b2e" : "#fff",
-        border: `1px solid ${theme.borderCol}`, borderRadius: 18,
-        padding: 24, maxWidth: 460, width: "100%",
-      }}>
-        <h2 style={{ margin: "0 0 18px", fontSize: 20, fontWeight: 800, color: theme.textMain }}>
-          Añadir personaje
-        </h2>
-        <div style={{ display: "grid", gap: 12 }}>
-          <SettingField label="Nombre"><input value={name} onChange={(e) => setName(e.target.value)} style={inputStyle(theme)}/></SettingField>
-          <SettingField label="Serie existente">
-            <select value={series} onChange={(e) => setSeries(e.target.value)} style={{ ...inputStyle(theme), cursor: "pointer" }}>
-              {existingSeries.map(s => <option key={s} value={s}>{s}</option>)}
-            </select>
-          </SettingField>
-          <SettingField label="O crear serie nueva">
-            <input value={newSeries} onChange={(e) => setNewSeries(e.target.value)} style={inputStyle(theme)} placeholder="(opcional)"/>
-          </SettingField>
-          <SettingField label="Color principal">
-            <input type="color" value={color} onChange={(e) => setColor(e.target.value)} style={{ ...inputStyle(theme), height: 44, padding: 4 }}/>
-          </SettingField>
-          <SettingField label="Rareza">
-            <select value={rarity} onChange={(e) => setRarity(e.target.value)} style={{ ...inputStyle(theme), cursor: "pointer" }}>
-              {Object.keys(RARITY_STYLES).map(r => <option key={r} value={r}>{r}</option>)}
-            </select>
-          </SettingField>
-        </div>
-        <div style={{ display: "flex", gap: 8, marginTop: 18, justifyContent: "flex-end" }}>
-          <button onClick={onClose} style={{
-            padding: "10px 18px", borderRadius: 10, border: `1px solid ${theme.borderCol}`,
-            background: "transparent", color: theme.textMain, cursor: "pointer", fontWeight: 600, fontFamily: "inherit",
-          }}>Cancelar</button>
-          <button onClick={handleAdd} disabled={!name} style={{
-            padding: "10px 22px", borderRadius: 10, border: "none",
-            background: name ? "linear-gradient(135deg, #fbbf24, #f59e0b)" : "#555",
-            color: name ? "#78350f" : "#888", cursor: name ? "pointer" : "not-allowed",
-            fontWeight: 700, fontFamily: "inherit",
-          }}>Añadir</button>
-        </div>
-      </div>
-    </div>
-  );
-}
